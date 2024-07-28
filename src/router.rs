@@ -1,10 +1,11 @@
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 use axum::{
     routing::{get, post},
     Router,
 };
 use filetravel_backend::{app_state::AppState, routes::create_session::create_session};
+use tokio::sync::Mutex;
 // use tokio::sync::Mutex;
 use tower_http::services::ServeDir;
 
