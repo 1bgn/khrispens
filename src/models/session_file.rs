@@ -1,4 +1,5 @@
 use serde::Serialize;
+use uuid::Uuid;
 
 #[derive(Clone, Serialize)]
 pub struct SessionFile {
@@ -8,5 +9,5 @@ pub struct SessionFile {
     pub createAt: Option<String>,
     pub updateAt: Option<String>,
     pub length: i64,
-    pub id: i64,
+    pub id: Uuid,
 }
