@@ -2,5 +2,5 @@ use serde::Deserialize;
 
 #[derive(Deserialize)]
 pub struct GetSession {
-    pub id: i64,
+    pub session_number: usize,
 }
