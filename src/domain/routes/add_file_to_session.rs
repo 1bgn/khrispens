@@ -6,6 +6,8 @@ use axum::{
     http::StatusCode,
     Json,
 };
+use axum::extract::ws::Message;
+use serde::Serialize;
 use tokio::sync::Mutex;
 
 use crate::{
@@ -29,7 +31,7 @@ pub async fn add_file_to_session(
     {
         let file = SessionFile::new(s);
         guard.sessions[index].files.push(file.clone());
-        guard.move_of(index).send(Messa);
+        guard.move_of(index).send(Message::Text(serde_json::to_string(&file).unwrap()));
         return Ok((StatusCode::OK, Json(file)));
     }
     Err((StatusCode::BAD_REQUEST, "Session is not found"))

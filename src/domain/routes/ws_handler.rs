@@ -1,9 +1,11 @@
 use std::net::SocketAddr;
 use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
-use axum::{Error, extract::ws::{WebSocket, Message}};
+
 use axum::body::Body;
 use axum::extract::{ConnectInfo, Query, State, WebSocketUpgrade};
+use axum::extract::ws::{Message, WebSocket};
+use axum::Json;
 use axum::response::Response;
 use futures_util::{sink::SinkExt, stream::{StreamExt, SplitSink, SplitStream}};
 use tokio::sync::broadcast::{Receiver, Sender};
@@ -25,23 +27,23 @@ pub async fn ws_handler(Query(s): Query<GetSession>, ws: WebSocketUpgrade, State
 }
 async fn handle_socket(socket: WebSocket, session_number: usize, broadcast_tx: Arc<Sender<Message>>) {
     let (mut ws_tx, mut ws_rx) = socket.split();
-    while let Some(Ok(msg)) = ws_rx.next().await {
-        match msg {
-            Message::Text(text) => {
-                break;
-            }
-            Message::Binary(_) => {}
-            Message::Ping(_) => {}
-            Message::Pong(_) => {}
-            Message::Close(_) => {
-                return;
-            }
-        }
-    }
+    // while let Some(Ok(msg)) = ws_rx.next().await {
+    //     match msg {
+    //         Message::Text(text) => {
+    //             break;
+    //         }
+    //         Message::Binary(_) => {}
+    //         Message::Ping(_) => {}
+    //         Message::Pong(_) => {}
+    //         Message::Close(_) => {
+    //             return;
+    //         }
+    //     }
+    // }
 
     let mut guard = broadcast_tx.clone();
     let mut rx = guard.subscribe();
-    guard.send(Message::Text("hi".to_string()));
+    // guard.send(Message::Text("hi".to_string()));
 
 
     let mut send_task = tokio::spawn(async move {
@@ -51,14 +53,14 @@ async fn handle_socket(socket: WebSocket, session_number: usize, broadcast_tx: A
             }
         }
     });
-    let mut guard = broadcast_tx.clone();
-    let mut recv_task = tokio::spawn(async move {
-        while let Some(Ok(Message::Text(text))) = ws_rx.next().await {
-            // Add username before message.
-            let _ = guard.send(Message::Text("teafe".to_string()));
-        }
-    });
-    println!("TEST");
+    // let mut guard = broadcast_tx.clone();
+    // let mut recv_task = tokio::spawn(async move {
+    //     while let Some(Ok(Message::Text(text))) = ws_rx.next().await {
+    //         // Add username before message.
+    //         let _ = guard.send(Message::Text("teafe".to_string()));
+    //     }
+    // });
+    // println!("TEST");
 }
 // async fn handle_socket(socket:WebSocket, session_number:usize, broadcast_tx: Arc<Mutex<Sender<Message>>>){
 //     let(mut sender,mut receiver)= socket.split();
