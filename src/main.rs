@@ -17,7 +17,7 @@ async fn main() {
     fs::create_dir(path).unwrap();
     let state = AppState { sessions: vec![], };
     let app = create_route(state,WsState::new());
-    let address = SocketAddr::from(([192,168,0,27], 3000));
+    let address = SocketAddr::from(([127,0,0,1], 3000));
     let listener = tokio::net::TcpListener::bind(&address).await.unwrap();
     axum::serve(listener, app.into_make_service_with_connect_info::<SocketAddr>()).await.unwrap();
 }

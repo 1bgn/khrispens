@@ -10,7 +10,7 @@ use tokio::sync::{
 
 #[derive(Clone)]
 pub struct WsState {
-    pub broadcast_txs: HashMap<usize, Arc<Mutex<Sender<Message>>>>,
+    pub broadcast_txs: HashMap<usize, Arc<Sender<Message>>>,
 }
 impl WsState {
     pub fn new() -> Self {
@@ -18,10 +18,10 @@ impl WsState {
             broadcast_txs: HashMap::new()
         }
     }
-    pub fn move_of(&mut self, index: usize) -> Arc<Mutex<Sender<Message>>>{
+    pub fn move_of(&mut self, index: usize) -> Arc<Sender<Message>>{
         let (tx, _) = broadcast::channel(32);
 
-        self.broadcast_txs.entry(index).or_insert( Arc::new(Mutex::new(tx)));
+        self.broadcast_txs.entry(index).or_insert( Arc::new(tx));
         return self.broadcast_txs.get(&index).unwrap().clone();
     }
 }
