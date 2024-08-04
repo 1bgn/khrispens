@@ -4,7 +4,7 @@ use axum::{
     Router,
     routing::{get, post},
 };
-use axum::extract::DefaultBodyLimit;
+use axum::extract::{DefaultBodyLimit, State};
 use axum::routing::delete;
 use tokio::sync::Mutex;
 use tower_http::{cors::CorsLayer, trace::TraceLayer};
@@ -38,7 +38,7 @@ pub fn create_route(app_state: AppState, ws_state:WsState) -> Router {
         .route("/cancel-session-file", post(cancel_upload_session_file))
         .with_state(Arc::new(Mutex::new(app_state)))
         .route("/session-bundle/ws",get(ws_handler))
-        .with_state(ws_state)
+        .with_state(Arc::new(Mutex::new(State(ws_state))))
 
         .layer(CorsLayer::permissive())
         .layer(TraceLayer::new_for_http() .make_span_with(DefaultMakeSpan::default().include_headers(true)),)
