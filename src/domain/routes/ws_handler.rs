@@ -19,42 +19,48 @@ pub async fn ws_handler(Query(s): Query<GetSession>, ws: WebSocketUpgrade, State
     info!("SESSION NUMBER #{}", s.session_number);
     println!("SESSION NUMBER #{}", s.session_number);
     let mut app_state= app_state.lock().await;
-    let (tx, _) = broadcast::channel(32);
-    app_state.broadcast_txs.entry(s.session_number).or_insert_with(|| Arc::new(Mutex::new(tx)));
-    let broadcast_tx = app_state.broadcast_txs.get(&s.session_number).unwrap().clone();
-    println!("session {:?}",app_state.broadcast_txs);
+
+    let broadcast_tx = app_state.move_of(s.session_number);
+    println!("socket_sessions {:?}",app_state.broadcast_txs);
     return  ws.on_upgrade(move |socket| handle_socket(socket,s.session_number,  broadcast_tx));
 }
 async fn handle_socket(mut socket: WebSocket, session_number:usize,broadcast_tx :Arc<Mutex<Sender<Message>>>) {
-    // let broadcast_tx = app_state.move_of(session_number);
-
     let (ws_tx, ws_rx) = socket.split();
     let ws_tx = Arc::new(Mutex::new(ws_tx));
     // let state_clone =Arc::clone();
 
     {
-        let broadcast_rx = broadcast_tx.lock().await.subscribe();
+        let guard =  broadcast_tx.lock().await;
+        let broadcast_rx = guard.subscribe();
+        println!("CONNECTED {}",Arc::strong_count(&broadcast_tx));
         tokio::spawn(async move {
             recv_broadcast(&ws_tx, broadcast_rx).await;
         });
     }
-    recv_from_client(ws_rx,&broadcast_tx).await;
+
+
+    recv_from_client(ws_rx,&broadcast_tx,).await;
 }
 
 async fn recv_from_client(
     mut client_rx: SplitStream<WebSocket>,
-    broadcast_tx: &Arc<Mutex<Sender<Message>>>,
+   broadcast_tx: &Arc<Mutex<Sender<Message>>>,
 ) {
+
     while let Some(Ok(msg)) = client_rx.next().await {
 
         if matches!(msg, Message::Close(_)) {
-            println!("DISCOnneCteD");
+            if Arc::strong_count(broadcast_tx)==2{
+                println!("Все отключились");
+            }
             return;
         }
         if broadcast_tx.lock().await.send(msg).is_err() {
             println!("Failed to broadcast a message");
         }
     }
+
+
 }
 async fn recv_broadcast(
     client_tx: &Arc<Mutex<SplitSink<WebSocket, Message>>>,
