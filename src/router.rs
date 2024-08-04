@@ -39,6 +39,7 @@ pub fn create_route(app_state: AppState, ws_state:WsState) -> Router {
         .with_state(Arc::new(Mutex::new(app_state)))
         .route("/session-bundle/ws",get(ws_handler))
         .with_state(ws_state)
+
         .layer(CorsLayer::permissive())
         .layer(TraceLayer::new_for_http() .make_span_with(DefaultMakeSpan::default().include_headers(true)),)
 }

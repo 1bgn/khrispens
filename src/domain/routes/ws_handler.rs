@@ -1,33 +1,37 @@
 use std::net::SocketAddr;
 use std::sync::Arc;
 use axum::{Error, extract::ws::{WebSocket, Message}};
+use axum::body::Body;
 use axum::extract::{ConnectInfo, Query, State, WebSocketUpgrade};
 use axum::response::Response;
 use futures_util::{sink::SinkExt, stream::{StreamExt, SplitSink, SplitStream}};
 use tokio::sync::broadcast::{Receiver, Sender};
 use tokio::sync::Mutex;
 use crate::domain::entities::get_session::GetSession;
-use crate::ws_state::WsState;
+// use crate::ws_state::WsState;
 use tracing::{error, info};
-#[tracing::instrument(skip(ws, state))]
-pub async fn ws_handler(Query(s): Query<GetSession>, ws: WebSocketUpgrade, State(state): State<WsState>, ConnectInfo(addr): ConnectInfo<SocketAddr>) ->Response {
+use crate::app_state::AppState;
+use crate::domain::models::session_bundle::SessionBundle;
+use crate::ws_state::WsState;
+
+pub async fn ws_handler(Query(s): Query<GetSession>, ws: WebSocketUpgrade, State(app_state): State<WsState>, ConnectInfo(addr): ConnectInfo<SocketAddr>) ->Response {
     info!("SESSION NUMBER #{}", s.session_number);
     println!("SESSION NUMBER #{}", s.session_number);
-    return  ws.on_upgrade(move |socket| handle_socket(socket,state));
+    return  ws.on_upgrade(move |socket| handle_socket(socket,app_state));
 }
-async fn handle_socket(mut socket: WebSocket, app_state: WsState) {
+async fn handle_socket(mut socket: WebSocket,    app_state: WsState) {
 
     let (ws_tx, ws_rx) = socket.split();
     let ws_tx = Arc::new(Mutex::new(ws_tx));
     // let state_clone =Arc::clone();
-    let app = &app_state;
+
     {
-        let broadcast_rx = app.broadcast_tx.lock().await.subscribe();
+        let broadcast_rx = app_state.broadcast_tx.lock().await.subscribe();
         tokio::spawn(async move {
             recv_broadcast(&ws_tx, broadcast_rx).await;
         });
     }
-    recv_from_client(ws_rx,&app.broadcast_tx).await;
+    recv_from_client(ws_rx,&app_state.broadcast_tx).await;
 }
 
 async fn recv_from_client(
