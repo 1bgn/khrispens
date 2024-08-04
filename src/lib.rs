@@ -1,3 +1,3 @@
 pub mod app_state;
-pub mod models;
-pub mod routes;
+
+pub mod domain;

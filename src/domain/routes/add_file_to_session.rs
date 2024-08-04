@@ -2,19 +2,18 @@ use std::sync::Arc;
 
 use axum::{
     debug_handler,
-    extract::{Query, State},
+    extract::State,
     http::StatusCode,
     Json,
 };
 use tokio::sync::Mutex;
 
 use crate::{
-    app_state::{self, AppState},
-    models::{
-        create_session_file::CreateSessionFile, get_session::GetSession,
-        session_bundle::SessionBundle, session_file::SessionFile,
-    },
+    app_state::AppState,
+    domain::models::session_file::SessionFile,
 };
+use crate::domain::entities::create_session_file::CreateSessionFile;
+
 #[debug_handler]
 pub async fn add_file_to_session(
     State(app_state): State<Arc<Mutex<AppState>>>,

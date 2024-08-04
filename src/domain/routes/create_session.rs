@@ -1,12 +1,11 @@
 use std::sync::Arc;
 
 use axum::{extract::State, http::StatusCode, Json};
-use chrono::Utc;
 use tokio::sync::Mutex;
-use uuid::{uuid, Uuid};
-// use tokio::sync::Mutex;
 
-use crate::{app_state::AppState, models::session_bundle::SessionBundle};
+use crate::{app_state::AppState, domain::models::session_bundle::SessionBundle};
+
+// use tokio::sync::Mutex;
 
 pub async fn create_session(
     State(app_state): State<Arc<Mutex<AppState>>>,

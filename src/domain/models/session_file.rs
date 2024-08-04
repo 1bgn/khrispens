@@ -2,7 +2,8 @@ use chrono::{DateTime, Utc};
 use rand::Rng;
 use serde::Serialize;
 
-use super::create_session_file::CreateSessionFile;
+use crate::domain::entities::create_session_file::CreateSessionFile;
+
 #[derive(Clone, Serialize)]
 pub struct SessionFile {
     pub file_name: String,

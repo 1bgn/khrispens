@@ -1,0 +1,67 @@
+use std::{fs::File, io::Write, sync::Arc};
+
+use axum::{
+    debug_handler,
+    extract::{Multipart, Query, State},
+    http::StatusCode,
+    Json,
+};
+use tokio::sync::Mutex;
+
+use crate::{
+    app_state::AppState,
+    domain::models::{erroe_message::ErrorMessage, session_file::SessionFile},
+};
+use crate::domain::entities::get_session_file::GetSessionFile;
+
+#[debug_handler]
+pub async fn upload_file_by_id(
+    State(app_state): State<Arc<Mutex<AppState>>>,
+    Query(get_file): Query<GetSessionFile>,
+
+    mut multipart: Multipart,
+) -> Result<(StatusCode, Json<SessionFile>), (StatusCode, Json<ErrorMessage>)> {
+    while let Some(field) = multipart.next_field().await.unwrap() {
+        let name = field.file_name().unwrap().to_string();
+        let data = field.bytes().await.unwrap();
+        let extension = name.split(".").last().unwrap();
+        let local_filepath = format!("files/{}.{}", get_file.file_id, extension);
+        let download_url = format!("/download/{}.{}", get_file.file_id, extension);
+
+        let state_clone = Arc::clone(&app_state);
+        let mut guard = state_clone.lock().await;
+        if let Some(index) = guard
+            .sessions
+            .iter()
+            .position(|session| session.session_number == get_file.session_number)
+        {
+            // let mut session = ;
+            let Some(index_file) = guard.sessions[index]
+                .files
+                .iter()
+                .position(|f| f.id == get_file.file_id)
+            else {
+                return Err((
+                    StatusCode::BAD_REQUEST,
+                    Json(ErrorMessage::new(String::from("File is not found"))),
+                ));
+            };
+            let mut file = File::create(local_filepath.clone()).unwrap();
+
+            let Ok(_) = file.write_all(data.as_ref()) else {
+                return Err((
+                    StatusCode::BAD_REQUEST,
+                    Json(ErrorMessage::new(String::from("Ошибка записи файла"))),
+                ));
+            };
+            let file = &mut guard.sessions[index].files[index_file];
+            file.upload(local_filepath, download_url, data.len());
+            return Ok((StatusCode::OK, Json(file.clone())));
+        }
+        // println!("Length of `{}` is {} bytes", name, data.len());
+    }
+    Err((
+        StatusCode::BAD_REQUEST,
+        Json(ErrorMessage::new(String::from("Some error"))),
+    ))
+}

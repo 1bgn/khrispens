@@ -1,7 +1,6 @@
 use chrono::{DateTime, Utc};
 use rand::Rng;
 use serde::Serialize;
-use uuid::Uuid;
 
 use super::session_file::SessionFile;
 

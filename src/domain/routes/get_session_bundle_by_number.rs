@@ -1,17 +1,18 @@
 use std::sync::Arc;
 
-use crate::{
-    app_state::AppState,
-    models::{get_session::GetSession, session_bundle::SessionBundle},
-};
 use axum::{
     debug_handler,
-    extract::{Path, Query, State},
+    extract::{Query, State},
     http::StatusCode,
     Json,
 };
-use serde::de::Error;
 use tokio::sync::Mutex;
+
+use crate::{
+    app_state::AppState,
+    domain::models::{ session_bundle::SessionBundle},
+};
+use crate::domain::entities::get_session::GetSession;
 
 #[debug_handler]
 pub async fn get_session_bundle_by_number(

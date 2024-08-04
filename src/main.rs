@@ -1,32 +1,30 @@
-mod router;
-mod user;
-use std::sync::{Arc, Mutex, RwLock};
-
+use std::fs;
+use std::net::SocketAddr;
+use std::sync::Arc;
+use tokio::sync::{broadcast, Mutex};
 use filetravel_backend::app_state::AppState;
 use router::create_route;
-use tower_http::services::ServeDir;
 
-use axum::{
-    http::StatusCode,
-    routing::{get, post},
-    Json, Router,
-};
-use serde::{Deserialize, Serialize};
-use user::User;
+mod router;
 
 #[tokio::main]
 async fn main() {
-    let state = AppState { sessions: vec![] };
+    let (tx, _) = broadcast::channel(32);
+    let path = "files/";
+    fs::remove_dir_all(path).unwrap();
+    fs::create_dir(path).unwrap();
+    let state = AppState { sessions: vec![], broadcast_tx:Arc::new(Mutex::new(tx))};
     let app = create_route(state);
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
-    axum::serve(listener, app).await.unwrap();
+    let address = SocketAddr::from(([192,168,0,27], 3000));
+    let listener = tokio::net::TcpListener::bind(&address).await.unwrap();
+    axum::serve(listener, app.into_make_service_with_connect_info::<SocketAddr>()).await.unwrap();
 }
-async fn hello_world() -> &'static str {
-    "hello world"
-}
-async fn create_user() -> (StatusCode, Json<User>) {
-    let user = User {
-        username: "Semion Khrispens".to_string(),
-    };
-    (StatusCode::OK, Json(user))
-}
+// async fn hello_world() -> &'static str {
+//     "hello world"
+// }
+// async fn create_user() -> (StatusCode, Json<User>) {
+//     let user = User {
+//         username: "Semion Khrispens".to_string(),
+//     };
+//     (StatusCode::OK, Json(user))
+// }
