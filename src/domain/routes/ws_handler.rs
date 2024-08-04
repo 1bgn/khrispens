@@ -13,9 +13,8 @@ use crate::domain::entities::get_session::GetSession;
 use tracing::{error, info};
 use crate::app_state::AppState;
 use crate::domain::models::session_bundle::SessionBundle;
-use crate::ws_state::WsState;
 
-pub async fn ws_handler(Query(s): Query<GetSession>, ws: WebSocketUpgrade, State(mut app_state): State<Arc<Mutex<State<WsState>>>>, ConnectInfo(addr): ConnectInfo<SocketAddr>) -> Response {
+pub async fn ws_handler(Query(s): Query<GetSession>, ws: WebSocketUpgrade, State(mut app_state): State<Arc<Mutex<AppState>>>, ConnectInfo(addr): ConnectInfo<SocketAddr>) -> Response {
     info!("SESSION NUMBER #{}", s.session_number);
     println!("SESSION NUMBER #{}", s.session_number);
     let mut app_state = app_state.lock().await;

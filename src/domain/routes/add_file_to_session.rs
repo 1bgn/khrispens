@@ -17,6 +17,7 @@ use crate::domain::entities::create_session_file::CreateSessionFile;
 #[debug_handler]
 pub async fn add_file_to_session(
     State(app_state): State<Arc<Mutex<AppState>>>,
+
     Json(s): Json<CreateSessionFile>,
 ) -> Result<(StatusCode, Json<SessionFile>), (StatusCode, &'static str)> {
     let state_clone = Arc::clone(&app_state);
@@ -28,6 +29,7 @@ pub async fn add_file_to_session(
     {
         let file = SessionFile::new(s);
         guard.sessions[index].files.push(file.clone());
+        guard.move_of(index).send(Messa);
         return Ok((StatusCode::OK, Json(file)));
     }
     Err((StatusCode::BAD_REQUEST, "Session is not found"))
