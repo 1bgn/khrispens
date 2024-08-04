@@ -23,8 +23,9 @@ use filetravel_backend::{
 use filetravel_backend::domain::routes::cancel_upload_session_file::cancel_upload_session_file;
 use filetravel_backend::domain::routes::delete_session_file_by_id::delete_session_file_by_id;
 use filetravel_backend::domain::routes::ws_handler::ws_handler;
+use filetravel_backend::ws_state::WsState;
 
-pub fn create_route(app_state: AppState) -> Router {
+pub fn create_route(app_state: AppState, ws_state:WsState) -> Router {
     Router::new()
         .nest_service("/", ServeDir::new("../filetravel_frontend/build/web"))
         .route("/download-file-from-id", get(download_file_from_id))
@@ -35,8 +36,9 @@ pub fn create_route(app_state: AppState) -> Router {
         .route("/add-file-to-session", post(add_file_to_session))
         .route("/delete-session-file",delete(delete_session_file_by_id))
         .route("/cancel-session-file", post(cancel_upload_session_file))
+        .with_state(Arc::new(Mutex::new(app_state)))
         .route("/session-bundle/ws",get(ws_handler))
+        .with_state(ws_state)
         .layer(CorsLayer::permissive())
         .layer(TraceLayer::new_for_http() .make_span_with(DefaultMakeSpan::default().include_headers(true)),)
-        .with_state(Arc::new(Mutex::new(app_state)))
 }

@@ -8,6 +8,6 @@ use tokio::sync::{
 };
 
 #[derive(Clone)]
-pub struct AppState {
-    pub sessions: Vec<SessionBundle>,
+pub struct WsState {
+    pub broadcast_tx: Arc<Mutex<Sender<Message>>>,
 }
