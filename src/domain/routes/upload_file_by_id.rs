@@ -1,5 +1,5 @@
 use std::{fs::File, io::Write, sync::Arc};
-
+use std::sync::mpsc::SendError;
 use axum::{
     debug_handler,
     extract::{Multipart, Query, State},
@@ -17,7 +17,7 @@ use crate::domain::entities::get_session_file::GetSessionFile;
 use crate::domain::models::websocket_event::WebsocketEvent;
 use crate::domain::models::websocket_event_object::WebsocketEventObject;
 
-#[debug_handler]
+
 pub async fn upload_file_by_id(
     State(app_state): State<Arc<Mutex<AppState>>>,
     Query(get_file): Query<GetSessionFile>,
@@ -56,16 +56,15 @@ pub async fn upload_file_by_id(
                     Json(ErrorMessage::new(String::from("Ошибка записи файла"))),
                 ));
             };
+            let  f =  (guard.sessions[index]).files[index_file].upload(local_filepath, download_url, data.len()).clone();
+
             {
-                let mut f = &mut (guard.sessions[index]).files[index_file];
-                SessionFile::upload(&mut f, local_filepath, download_url, data.len());
+                // let sender =;
+               let _=  guard.move_of(index).send(Message::Text(serde_json::to_string(&WebsocketEventObject { websocket_event_type: WebsocketEvent::FileEvent, data: f.clone() }).unwrap()));
             }
-            ;
-            // let file = &mut.upload(local_filepath, download_url, data.len());
 
-            guard.move_of(index).send(Message::Text(serde_json::to_string(&WebsocketEventObject { websocket_event_type: WebsocketEvent::FileEvent, data: (guard.sessions[index]).files[index_file].clone() }).unwrap()));
 
-            return Ok((StatusCode::OK, Json((guard.sessions[index]).files[index_file].clone())));
+            return Ok((StatusCode::OK, Json(f)));
         }
         // println!("Length of `{}` is {} bytes", name, data.len());
     }
