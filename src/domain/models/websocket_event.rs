@@ -5,6 +5,7 @@ use crate::domain::models::session_file::SessionFile;
 #[derive(Serialize)]
 pub enum WebsocketEvent {
     FileEvent,
+    FileEventDeleted,
     SessionEvent
 
 }

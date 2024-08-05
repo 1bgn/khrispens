@@ -1,6 +1,7 @@
 use std::fs::{File, remove_file};
 use std::sync::Arc;
 use axum::extract::{Query, State};
+use axum::extract::ws::Message;
 use axum::http::StatusCode;
 use axum::Json;
 use tokio::sync::Mutex;
@@ -8,6 +9,8 @@ use crate::app_state::AppState;
 use crate::domain::entities::get_session_file::GetSessionFile;
 use crate::domain::models::erroe_message::ErrorMessage;
 use crate::domain::models::session_file::SessionFile;
+use crate::domain::models::websocket_event::WebsocketEvent;
+use crate::domain::models::websocket_event_object::WebsocketEventObject;
 
 pub async fn delete_session_file_by_id(State(app_state): State<Arc<Mutex<AppState>>>,
                                        Query(get_file): Query<GetSessionFile>,) ->Result<(StatusCode,), (StatusCode, Json<ErrorMessage>)>{
@@ -34,10 +37,12 @@ pub async fn delete_session_file_by_id(State(app_state): State<Arc<Mutex<AppStat
             };
 
             let  file =  guard.sessions[index].files.remove(index_file);
-            if let Some(path) = file.local_filepath{
+
+            if let Some(ref path) = file.local_filepath{
                 remove_file(path).unwrap();
 
             }
+            let k = guard.move_of(get_file.session_number).send(Message::Text(serde_json::to_string(&WebsocketEventObject { websocket_event_type: WebsocketEvent::FileEventDeleted, data: file.clone() }).unwrap()));
             return Ok((StatusCode::OK, ));
         }
     Err((
