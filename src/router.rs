@@ -20,6 +20,7 @@ use filetravel_backend::{
         upload_file_by_id::upload_file_by_id,
     },
 };
+use filetravel_backend::domain::routes::add_folder_to_session::add_folder_to_session;
 use filetravel_backend::domain::routes::cancel_upload_session_file::cancel_upload_session_file;
 use filetravel_backend::domain::routes::delete_session_file_by_id::delete_session_file_by_id;
 use filetravel_backend::domain::routes::ws_handler::ws_handler;
@@ -33,6 +34,7 @@ pub fn create_route(app_state: AppState) -> Router {
         .route("/session-bundle", get(get_session_bundle_by_number))
         .route("/session-bundle", post(create_session))
         .route("/add-file-to-session", post(add_file_to_session))
+        .route("/add-folder-to-session", post(add_folder_to_session))
         .route("/delete-session-file",delete(delete_session_file_by_id))
         .route("/cancel-session-file", post(cancel_upload_session_file))
         .route("/session-bundle/ws",get(ws_handler))

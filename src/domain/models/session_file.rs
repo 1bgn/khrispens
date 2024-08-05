@@ -3,11 +3,13 @@ use rand::Rng;
 use serde::Serialize;
 
 use crate::domain::entities::create_session_file::CreateSessionFile;
+use crate::domain::models::session_cell::SessionCell;
 
 #[derive(Clone, Serialize)]
 pub struct SessionFile {
     pub file_name: String,
     pub local_filepath: Option<String>,
+    pub system_path:String,
     pub download_url: Option<String>,
     pub create_at: DateTime<Utc>,
     pub update_at: Option<DateTime<Utc>>,
@@ -15,10 +17,32 @@ pub struct SessionFile {
     pub id: i64,
     pub session_file_state: SessionFileState,
 }
+impl SessionCell for SessionFile {
+    fn id(&self) -> i64 {
+        self.id
+    }
+
+    fn system_path(&self) -> String {
+        self.system_path.clone()
+    }
+
+    fn create_at(&self) -> DateTime<Utc> {
+        self.create_at
+    }
+
+    fn update_at(&self) -> Option<DateTime<Utc>> {
+        self.update_at
+    }
+
+    fn name(&self) -> String {
+        self.file_name.clone()
+    }
+}
 impl SessionFile {
-    pub fn new(create_session_file: CreateSessionFile) -> Self {
+    pub fn new( to:String,create_session_file:&CreateSessionFile) -> Self {
         Self {
-            file_name: create_session_file.filename,
+            system_path:to,
+            file_name: create_session_file.filename.clone(),
             local_filepath: None,
             download_url: None,
             create_at: Utc::now(),
