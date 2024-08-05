@@ -16,9 +16,9 @@ async fn main() {
     fs::create_dir(path).unwrap();
 
     let app = create_route(AppState::new());
-    let address = SocketAddr::from(([127,0,0,1], 3000));
-    let listener = tokio::net::TcpListener::bind(&address).await.unwrap();
-    axum::serve(listener, app.into_make_service_with_connect_info::<SocketAddr>()).await.unwrap();
+    let address = tokio::net::TcpListener::bind("192.168.3.8:3000").await.unwrap();
+    // let listener = tokio::net::TcpListener::bind(&address).await.unwrap();
+    axum::serve(address, app.into_make_service_with_connect_info::<SocketAddr>()).await.unwrap();
 }
 // async fn hello_world() -> &'static str {
 //     "hello world"

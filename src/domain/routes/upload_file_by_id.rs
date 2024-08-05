@@ -6,6 +6,7 @@ use axum::{
     http::StatusCode,
     Json,
 };
+use axum::extract::ws::Message;
 use tokio::sync::Mutex;
 
 use crate::{
@@ -13,12 +14,13 @@ use crate::{
     domain::models::{erroe_message::ErrorMessage, session_file::SessionFile},
 };
 use crate::domain::entities::get_session_file::GetSessionFile;
+use crate::domain::models::websocket_event::WebsocketEvent;
+use crate::domain::models::websocket_event_object::WebsocketEventObject;
 
 #[debug_handler]
 pub async fn upload_file_by_id(
     State(app_state): State<Arc<Mutex<AppState>>>,
     Query(get_file): Query<GetSessionFile>,
-
     mut multipart: Multipart,
 ) -> Result<(StatusCode, Json<SessionFile>), (StatusCode, Json<ErrorMessage>)> {
     while let Some(field) = multipart.next_field().await.unwrap() {
@@ -29,14 +31,14 @@ pub async fn upload_file_by_id(
         let download_url = format!("/download/{}.{}", get_file.file_id, extension);
 
         let state_clone = Arc::clone(&app_state);
-        let mut guard = state_clone.lock().await;
+        let  mut guard = state_clone.lock().await;
         if let Some(index) = guard
             .sessions
             .iter()
             .position(|session| session.session_number == get_file.session_number)
         {
             // let mut session = ;
-            let Some(index_file) = guard.sessions[index]
+            let Some(index_file) = guard.clone().sessions[index]
                 .files
                 .iter()
                 .position(|f| f.id == get_file.file_id)
@@ -54,9 +56,16 @@ pub async fn upload_file_by_id(
                     Json(ErrorMessage::new(String::from("Ошибка записи файла"))),
                 ));
             };
-            let file = &mut guard.sessions[index].files[index_file];
-            file.upload(local_filepath, download_url, data.len());
-            return Ok((StatusCode::OK, Json(file.clone())));
+            {
+                let mut f = &mut (guard.sessions[index]).files[index_file];
+                SessionFile::upload(&mut f, local_filepath, download_url, data.len());
+            }
+            ;
+            // let file = &mut.upload(local_filepath, download_url, data.len());
+
+            guard.move_of(index).send(Message::Text(serde_json::to_string(&WebsocketEventObject { websocket_event_type: WebsocketEvent::FileEvent, data: (guard.sessions[index]).files[index_file].clone() }).unwrap()));
+
+            return Ok((StatusCode::OK, Json((guard.sessions[index]).files[index_file].clone())));
         }
         // println!("Length of `{}` is {} bytes", name, data.len());
     }

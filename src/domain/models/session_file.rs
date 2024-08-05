@@ -28,12 +28,13 @@ impl SessionFile {
             id: rand::thread_rng().gen_range(0..10000000),
         }
     }
-    pub fn upload(&mut self, local_path: String, download_url: String, length: usize) {
+    pub fn upload(&mut self, local_path: String, download_url: String, length: usize) ->&mut  SessionFile{
         self.local_filepath = Some(local_path);
         self.download_url = Some(download_url);
         self.session_file_state = SessionFileState::Uploaded;
         self.length = Some(length);
         self.update_at = Some(Utc::now());
+        return  self;
     }
 }
 #[derive(Clone, Serialize)]

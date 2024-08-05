@@ -15,11 +15,12 @@ use crate::{
     domain::models::session_file::SessionFile,
 };
 use crate::domain::entities::create_session_file::CreateSessionFile;
+use crate::domain::models::websocket_event::WebsocketEvent;
+use crate::domain::models::websocket_event_object::WebsocketEventObject;
 
 #[debug_handler]
 pub async fn add_file_to_session(
     State(app_state): State<Arc<Mutex<AppState>>>,
-
     Json(s): Json<CreateSessionFile>,
 ) -> Result<(StatusCode, Json<SessionFile>), (StatusCode, &'static str)> {
     let state_clone = Arc::clone(&app_state);
@@ -31,7 +32,7 @@ pub async fn add_file_to_session(
     {
         let file = SessionFile::new(s);
         guard.sessions[index].files.push(file.clone());
-        guard.move_of(index).send(Message::Text(serde_json::to_string(&file).unwrap()));
+        guard.move_of(index).send(Message::Text(serde_json::to_string(&WebsocketEventObject { websocket_event_type: WebsocketEvent::FileEvent, data: file.clone() }).unwrap()));
         return Ok((StatusCode::OK, Json(file)));
     }
     Err((StatusCode::BAD_REQUEST, "Session is not found"))
