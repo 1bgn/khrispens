@@ -25,21 +25,17 @@ use crate::domain::result_models::show_folder::ShowFolder;
 
 #[debug_handler]
 pub async fn show_session_folder(
-    State(app_state): State<Arc<Mutex<AppState>>>,
+    State(app_state): State<AppState>,
     Query(s): Query<GetSessionFolder>,
 ) -> Result<(StatusCode, Json<ShowFolder>), (StatusCode, &'static str)> {
 
-    let state_clone = Arc::clone(&app_state);
-    let mut guard = state_clone.lock().await;
-    if let Some(index) = guard
+    if let Some(bundle) = app_state
         .sessions
-        .iter()
-        .position(|session| session.session_number == s.session_number)
+        .get(&s.session_number)
     {
-        let session= &mut guard.sessions[index];
-        if let Some(folder) = session.included_folders.get(&s.root_folder_id){
-            let  files:Vec<SessionFile> = folder.included_file_ids.iter().map(|file_id|{session.files.get(file_id).unwrap().clone()}).collect();
-            let  folders:Vec<SessionFolder> = folder.included_folder_ids.iter().map(|file_id|{session.included_folders.get(file_id).unwrap().clone()}).collect();
+        if let Some(folder) = bundle.included_folders.get(&s.root_folder_id){
+            let  files:Vec<SessionFile> = folder.included_file_ids.iter().map(|file_id|{bundle.files.get(file_id).unwrap().clone()}).collect();
+            let  folders:Vec<SessionFolder> = folder.included_folder_ids.iter().map(|file_id|{bundle.included_folders.get(file_id).unwrap().clone()}).collect();
 
             let show_folder = ShowFolder::new(folder,files,folders);
 

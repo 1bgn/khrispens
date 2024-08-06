@@ -15,41 +15,37 @@ use crate::domain::models::session_folder::SessionFolder;
 use crate::domain::models::websocket_event::WebsocketEvent;
 use crate::domain::models::websocket_event_object::WebsocketEventObject;
 
-pub async fn delete_session_folder_by_id(State(app_state): State<Arc<Mutex<AppState>>>,
+pub async fn delete_session_folder_by_id(State(app_state): State<AppState>,
                                          Query(get_file): Query<GetSessionFolder>, ) -> Result<(StatusCode,), (StatusCode, Json<ErrorMessage>)> {
-    let state_clone = Arc::clone(&app_state);
-    let mut guard = &mut state_clone.lock().await;
-    if let Some(index) = guard
+    if let Some(mut bundle) = app_state
         .sessions
-        .iter()
-        .position(|session| session.session_number == get_file.session_number)
+        .get_mut( &get_file.session_number)
     {
-        let mut session = &mut guard.sessions[index];
         {
             // let  s = & guard.sessions[index];
             // let mut folder =  session.included_folders.get(&get_file.root_folder_id).unwrap();
-            let mut folder = session.included_folders.get(&get_file.root_folder_id).unwrap();
+            let mut folder = bundle.included_folders.get(&get_file.root_folder_id).unwrap();
 
-            let (file_ids, mut folder_ids) = recursive_delete_folder(&folder, &session);
+            let (file_ids, mut folder_ids) = recursive_delete_folder(&folder, &bundle);
             file_ids.iter().for_each(|file_id| {
-                let file = session.files.get(file_id).unwrap();
+                let file = bundle.files.get(file_id).unwrap();
                 if let Some(ref path) = file.local_filepath {
                     remove_file(path).unwrap();
                 }
-                session.files.remove(file_id);
+                bundle.files.remove(file_id);
             });
             folder_ids.iter_mut().for_each(|folder_id| {
-                session.included_folders.remove(folder_id);
+                bundle.included_folders.remove(folder_id);
             });
         }
-        let folder = session.included_folders.get(&get_file.root_folder_id).unwrap().clone();
-        let parent = session.included_folders.get_mut(&folder.parent_id).unwrap();
+        let folder = bundle.included_folders.get(&get_file.root_folder_id).unwrap().clone();
+        let parent = bundle.included_folders.get_mut(&folder.parent_id).unwrap();
         let pos = parent.included_folder_ids.iter().position(|s| s == &folder.id).unwrap();
         parent.included_folder_ids.remove(pos);
 
-        session.included_folders.remove(&get_file.root_folder_id);
+        bundle.included_folders.remove(&get_file.root_folder_id);
 
-        let k = guard.move_of(get_file.session_number).send(Message::Text(serde_json::to_string(&WebsocketEventObject { websocket_event_type: WebsocketEvent::FolderDeletedEvent, folder: folder.parent_id, data: folder.clone() }).unwrap()));
+        let k = app_state.move_of(get_file.session_number).send(Message::Text(serde_json::to_string(&WebsocketEventObject { websocket_event_type: WebsocketEvent::FolderDeletedEvent, folder: folder.parent_id, data: folder.clone() }).unwrap()));
 
 
         return Ok((StatusCode::OK,));

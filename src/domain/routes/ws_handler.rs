@@ -16,7 +16,7 @@ use tracing::{error, info};
 use crate::app_state::AppState;
 use crate::domain::models::session_bundle::SessionBundle;
 
-pub async fn ws_handler(Query(s): Query<GetSession>, ws: WebSocketUpgrade, State(mut app_state): State<Arc<Mutex<AppState>>>, ConnectInfo(addr): ConnectInfo<SocketAddr>) -> Response {
+pub async fn ws_handler(Query(s): Query<GetSession>, ws: WebSocketUpgrade, State(mut app_state): State<AppState>, ConnectInfo(addr): ConnectInfo<SocketAddr>) -> Response {
 
     println!("SESSION NUMBER #{}", s.session_number);
 
@@ -24,11 +24,10 @@ pub async fn ws_handler(Query(s): Query<GetSession>, ws: WebSocketUpgrade, State
 
     return ws.on_upgrade(move |socket| handle_socket(socket,addr, s.session_number, app_state));
 }
-async fn handle_socket(socket: WebSocket, who:SocketAddr, session_number: usize, mut app_state: Arc<Mutex<AppState>>)  {
+async fn handle_socket(socket: WebSocket, who:SocketAddr, session_number: usize, mut app_state: AppState)  {
 
-        let mut guard = app_state.lock().await;
-        let broadcast_tx = guard.move_of(session_number);
-        println!("socket_sessions {:?}", guard.broadcast_txs);
+        let broadcast_tx = app_state.move_of(session_number);
+        println!("socket_sessions {:?}", app_state.broadcast_txs);
         let (mut ws_tx, mut ws_rx) = socket.split();
 
 
@@ -36,14 +35,14 @@ async fn handle_socket(socket: WebSocket, who:SocketAddr, session_number: usize,
         let mut sender = broadcast_tx.clone();
         let mut rx = sender.subscribe();
     //снимаем замок
-        drop(guard);
 
-
+    //
         let mut send_task = tokio::spawn(async move {
             while let Ok(msg) = rx.recv().await {
                 if ws_tx.send(msg).await.is_err() {
                     println!("client  abruptly disconnected");
                     break;
+                }else {
                 }
             }
         });
@@ -71,8 +70,7 @@ async fn handle_socket(socket: WebSocket, who:SocketAddr, session_number: usize,
 
         println!("Websocket context {who} destroyed, count: {}", broadcast_tx.receiver_count());
 
-    let mut guard = app_state.lock().await;
-    guard.remove_of(session_number);
+    app_state.remove_of(session_number);
 }
 fn process_message(msg: Message, who: SocketAddr) -> ControlFlow<(), ()> {
     match msg {
