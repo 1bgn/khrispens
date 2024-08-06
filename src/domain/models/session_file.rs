@@ -39,9 +39,9 @@ impl SessionCell for SessionFile {
     }
 }
 impl SessionFile {
-    pub fn new( to:String,create_session_file:&CreateSessionFile) -> Self {
+    pub fn new( create_session_file:&CreateSessionFile) -> Self {
         Self {
-            system_path:to,
+            system_path:String::new(),
             file_name: create_session_file.filename.clone(),
             local_filepath: None,
             download_url: None,

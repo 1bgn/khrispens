@@ -18,25 +18,25 @@ use crate::domain::models::session_folder::SessionFolder;
 pub struct SessionBundle {
     pub session_number: usize,
     pub id: i64,
-    pub start_point:String,
+    pub start_point:i64,
     pub create_at: DateTime<Utc>,
     pub update_at: Option<DateTime<Utc>>,
-    pub files: Vec<SessionFile>,
-    pub included_folders: HashMap<String, SessionFolder>,
+    pub files: HashMap<i64,SessionFile>,
+    pub included_folders: HashMap<i64, SessionFolder>,
 }
 impl SessionBundle {
     pub fn new(session_number: usize) -> Self {
         Self {
-            included_folders: HashMap::from([(String::from("/"), SessionFolder::new("".to_string(),&CreateSessionFolder {session_number:session_number, folder_name: String::from(""), system_path: String::from("/") }))]),
-            start_point:String::from("/"),
+            included_folders: HashMap::from([(1, SessionFolder::root_new("".to_string(),&CreateSessionFolder { root_folder_id: 0, session_number:session_number, folder_name:String::from("root") }))]),
+            start_point:1,
             create_at: Utc::now(),
             update_at: None,
             session_number,
-            files: vec![],
+            files: HashMap::new(),
             id: rand::thread_rng().gen_range(0..10000000),
         }
     }
     pub fn add_folder(&mut self,session_folder: SessionFolder){
-        &self.included_folders.insert(session_folder.system_path.clone(),session_folder);
+        &self.included_folders.insert(session_folder.id,session_folder);
     }
 }

@@ -40,8 +40,7 @@ pub async fn upload_file_by_id(
             // let mut session = ;
             let Some(index_file) = guard.clone().sessions[index]
                 .files
-                .iter()
-                .position(|f| f.id == get_file.file_id)
+                .get(&get_file.file_id)
             else {
                 return Err((
                     StatusCode::BAD_REQUEST,
@@ -56,15 +55,18 @@ pub async fn upload_file_by_id(
                     Json(ErrorMessage::new(String::from("Ошибка записи файла"))),
                 ));
             };
-            let  f =  (guard.sessions[index]).files[index_file].upload(local_filepath, download_url, data.len()).clone();
+           if let Some(ff) = (guard.sessions[index]).files.get_mut(&get_file.file_id){
+               let  f =  ff.upload(local_filepath, download_url, data.len()).clone();
+               {
+                   // let sender =;
+                   let _=  guard.move_of(index).send(Message::Text(serde_json::to_string(&WebsocketEventObject { folder:get_file.root_folder_id,websocket_event_type: WebsocketEvent::FileEvent, data: f.clone() }).unwrap()));
+               }
 
-            {
-                // let sender =;
-               let _=  guard.move_of(index).send(Message::Text(serde_json::to_string(&WebsocketEventObject { websocket_event_type: WebsocketEvent::FileEvent, data: f.clone() }).unwrap()));
-            }
+
+               return Ok((StatusCode::OK, Json(f)));
+           }
 
 
-            return Ok((StatusCode::OK, Json(f)));
         }
         // println!("Length of `{}` is {} bytes", name, data.len());
     }

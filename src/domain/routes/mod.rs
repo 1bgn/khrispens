@@ -7,4 +7,5 @@ pub mod delete_session_file_by_id;
 pub mod cancel_upload_session_file;
 pub mod ws_handler;
 pub mod add_folder_to_session;
-mod show_session_folder;
+pub mod show_session_folder;
+pub mod delete_session_folder_by_id;

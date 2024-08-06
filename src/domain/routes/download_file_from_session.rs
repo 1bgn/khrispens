@@ -5,6 +5,7 @@ use axum::extract::{Query, State};
 use axum::response::IntoResponse;
 use tokio::fs::File;
 use tokio::sync::Mutex;
+use tokio::time;
 use tokio_util::io::ReaderStream;
 
 use crate::app_state::AppState;
@@ -21,14 +22,10 @@ pub async fn download_file_from_id(State(app_state): State<Arc<Mutex<AppState>>>
         .position(|session| session.session_number == get_file.session_number)
     {
         // let mut session = ;
-        let index_file =
-            guard.sessions[index]
-                .files
-                .iter()
-                .position(|f| f.id == get_file.file_id).unwrap();
 
+        std::thread::sleep(time::Duration::from_secs(10));
 
-        let f = guard.sessions[index].files[index_file].clone();
+        let f = guard.sessions[index].files.get(& get_file.file_id).unwrap().clone();
         let file = File::open(f.local_filepath.unwrap()).await.unwrap();
 
         let body_reader = ReaderStream::new(file);

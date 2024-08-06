@@ -6,5 +6,5 @@ use serde::Deserialize;
 pub struct CreateSessionFile {
     pub session_number: usize,
     pub filename: String,
-    pub system_path:String
+    pub root_folder_id:i64
 }

@@ -31,11 +31,11 @@ pub async fn add_file_to_session(
         .position(|session| session.session_number == s.session_number)
     {
         // let session= ;
-        let file = SessionFile::new(s.system_path.clone(),&s);
-        if let Some(folder) =  guard.sessions[index].included_folders.get_mut(&s.system_path){
+        let file = SessionFile::new(&s);
+        if let Some(folder) =  guard.sessions[index].included_folders.get_mut(&s.root_folder_id){
             folder.add_file(&file);
-            &mut guard.sessions[index].files.push(file.clone());
-            let _ = guard.move_of(index).send(Message::Text(serde_json::to_string(&WebsocketEventObject { websocket_event_type: WebsocketEvent::FileEvent, data: file.clone() }).unwrap()));
+            &mut guard.sessions[index].files.insert(file.id,file.clone());
+            let _ = guard.move_of(index).send(Message::Text(serde_json::to_string(&WebsocketEventObject { folder:s.root_folder_id,websocket_event_type: WebsocketEvent::FileEvent, data: file.clone() }).unwrap()));
             return Ok((StatusCode::OK, Json(file)));
         }else {
             return Err((StatusCode::BAD_REQUEST, "Папка не найдена"));

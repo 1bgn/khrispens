@@ -6,6 +6,8 @@ use crate::domain::models::session_file::SessionFile;
 pub enum WebsocketEvent {
     FileEvent,
     FileEventDeleted,
-    SessionEvent
+    SessionEvent,
+    FolderCreateEvent,
+    FolderDeletedEvent,
 
 }

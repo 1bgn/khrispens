@@ -32,19 +32,18 @@ pub async fn add_folder_to_session(
         .iter()
         .position(|session| session.session_number == s.session_number)
     {
-        let session= &mut guard.sessions[index];
-        if let Some(folder) = session.included_folders.get(&s.system_path){
-            let new_folder = SessionFolder::new(folder.system_path.clone(),&s);
+        let session = &mut guard.sessions[index];
+        if let Some(folder) = session.included_folders.get_mut(&s.root_folder_id) {
+            let new_folder = SessionFolder::new(folder.id, folder.system_path.clone(), &s);
 
             // println!("{:?}",folder);
+            folder.add_folder(&new_folder);
             session.add_folder(new_folder.clone());
-            // let _ = guard.move_of(index).send(Message::Text(serde_json::to_string(&WebsocketEventObject { websocket_event_type: WebsocketEvent::FileEvent, data: file.clone() }).unwrap()));
+            let _ = guard.move_of(index).send(Message::Text(serde_json::to_string(&WebsocketEventObject { folder: s.root_folder_id, websocket_event_type: WebsocketEvent::FolderCreateEvent, data: new_folder.clone() }).unwrap()));
             return Ok((StatusCode::OK, Json(new_folder.clone())));
-        }else {
+        } else {
             return Err((StatusCode::BAD_REQUEST, "Папка не найдена"));
         }
-
-
     }
     Err((StatusCode::BAD_REQUEST, "Session is not found"))
 }

@@ -6,6 +6,7 @@ use axum::{
     http::StatusCode,
     Json,
 };
+use axum::extract::Query;
 use axum::extract::ws::Message;
 use serde::Serialize;
 use tokio::sync::Mutex;
@@ -25,8 +26,9 @@ use crate::domain::result_models::show_folder::ShowFolder;
 #[debug_handler]
 pub async fn show_session_folder(
     State(app_state): State<Arc<Mutex<AppState>>>,
-    Json(s): Json<GetSessionFolder>,
+    Query(s): Query<GetSessionFolder>,
 ) -> Result<(StatusCode, Json<ShowFolder>), (StatusCode, &'static str)> {
+
     let state_clone = Arc::clone(&app_state);
     let mut guard = state_clone.lock().await;
     if let Some(index) = guard
@@ -35,10 +37,11 @@ pub async fn show_session_folder(
         .position(|session| session.session_number == s.session_number)
     {
         let session= &mut guard.sessions[index];
-        if let Some(folder) = session.included_folders.get(&s.system_path){
-            // let mut files = folder.included_file_ids.iter().map(|file_id|)
+        if let Some(folder) = session.included_folders.get(&s.root_folder_id){
+            let  files:Vec<SessionFile> = folder.included_file_ids.iter().map(|file_id|{session.files.get(file_id).unwrap().clone()}).collect();
+            let  folders:Vec<SessionFolder> = folder.included_folder_ids.iter().map(|file_id|{session.included_folders.get(file_id).unwrap().clone()}).collect();
 
-            let show_folder = ShowFolder::new(folder,vec![],vec![]);
+            let show_folder = ShowFolder::new(folder,files,folders);
 
             // println!("{:?}",folder);
             // let _ = guard.move_of(index).send(Message::Text(serde_json::to_string(&WebsocketEventObject { websocket_event_type: WebsocketEvent::FileEvent, data: file.clone() }).unwrap()));

@@ -25,24 +25,15 @@ pub async fn delete_session_file_by_id(State(app_state): State<Arc<Mutex<AppStat
             .position(|session| session.session_number == get_file.session_number)
         {
             // let mut session = ;
-            let Some(index_file) = guard.sessions[index]
-                .files
-                .iter()
-                .position(|f| f.id == get_file.file_id)
-            else {
-                return Err((
-                    StatusCode::BAD_REQUEST,
-                    Json(ErrorMessage::new(String::from("File is not found"))),
-                ));
-            };
-
-            let  file =  guard.sessions[index].files.remove(index_file);
-
+            let  file =  guard.sessions[index].files.remove(&get_file.file_id).unwrap();
+            let folder = guard.sessions[index].included_folders.get_mut(&get_file.root_folder_id).unwrap();
+            let pos = folder.included_file_ids.iter().position(|s|s==&get_file.file_id).unwrap();
+            folder.included_file_ids.remove(pos);
             if let Some(ref path) = file.local_filepath{
                 remove_file(path).unwrap();
 
             }
-            let k = guard.move_of(get_file.session_number).send(Message::Text(serde_json::to_string(&WebsocketEventObject { websocket_event_type: WebsocketEvent::FileEventDeleted, data: file.clone() }).unwrap()));
+            let k = guard.move_of(get_file.session_number).send(Message::Text(serde_json::to_string(&WebsocketEventObject { websocket_event_type: WebsocketEvent::FileEventDeleted,folder:get_file.root_folder_id, data: file.clone() }).unwrap()));
             return Ok((StatusCode::OK, ));
         }
     Err((

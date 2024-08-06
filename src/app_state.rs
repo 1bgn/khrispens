@@ -28,4 +28,7 @@ impl AppState {
         self.broadcast_txs.entry(index).or_insert( Arc::new(tx));
         return self.broadcast_txs.get(&index).unwrap().clone();
     }
+    pub fn remove_of(&mut self, index: usize) {
+        self.broadcast_txs.remove(&index);
+    }
 }
