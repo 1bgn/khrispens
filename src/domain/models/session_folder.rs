@@ -1,9 +1,8 @@
 use chrono::{DateTime, Utc};
 use rand::Rng;
-use serde::de::Unexpected::Str;
 use serde::Serialize;
+
 use crate::domain::entities::create_session_folder::CreateSessionFolder;
-use crate::domain::models::session_cell::SessionCell;
 use crate::domain::models::session_file::SessionFile;
 
 #[derive(Serialize,Clone,Debug)]
@@ -53,5 +52,8 @@ impl SessionFolder{
     pub fn add_folder(&mut self,session_folder: &SessionFolder){
         self.included_folder_ids.push(session_folder.id);
         self.update_at = Some(Utc::now());
+    }
+    pub fn rename_folder(&mut self,new_name:String){
+        self.folder_name = new_name;
     }
 }

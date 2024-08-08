@@ -1,22 +1,15 @@
 use std::net::SocketAddr;
-use std::ops::{ControlFlow, Deref, DerefMut};
-use std::sync::{Arc, };
+use std::ops::ControlFlow;
 
-use axum::body::Body;
 use axum::extract::{ConnectInfo, Query, State, WebSocketUpgrade};
 use axum::extract::ws::{Message, WebSocket};
-use axum::Json;
 use axum::response::Response;
-use futures_util::{sink::SinkExt, stream::{StreamExt, SplitSink, SplitStream}};
-use tokio::sync::broadcast::{Receiver, Sender};
-use tokio::sync::{broadcast, Mutex, MutexGuard};
-use crate::domain::entities::get_session::GetSession;
-// use crate::ws_state::WsState;
-use tracing::{error, info};
-use crate::app_state::AppState;
-use crate::domain::models::session_bundle::SessionBundle;
+use futures_util::{sink::SinkExt, stream::StreamExt};
 
-pub async fn ws_handler(Query(s): Query<GetSession>, ws: WebSocketUpgrade, State(mut app_state): State<AppState>, ConnectInfo(addr): ConnectInfo<SocketAddr>) -> Response {
+use crate::app_state::AppState;
+use crate::domain::entities::get_session::GetSession;
+
+pub async fn ws_handler_route(Query(s): Query<GetSession>, ws: WebSocketUpgrade, State(mut app_state): State<AppState>, ConnectInfo(addr): ConnectInfo<SocketAddr>) -> Response {
 
     println!("SESSION NUMBER #{}", s.session_number);
 

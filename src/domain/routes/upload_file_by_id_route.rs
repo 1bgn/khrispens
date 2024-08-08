@@ -1,13 +1,11 @@
-use std::{fs::File, io::Write, sync::Arc};
-use std::sync::mpsc::SendError;
+use std::{fs::File, io::Write};
+use std::time::Duration;
 use axum::{
-    debug_handler,
     extract::{Multipart, Query, State},
     http::StatusCode,
     Json,
 };
 use axum::extract::ws::Message;
-use tokio::sync::Mutex;
 
 use crate::{
     app_state::AppState,
@@ -17,8 +15,7 @@ use crate::domain::entities::get_session_file::GetSessionFile;
 use crate::domain::models::websocket_event::WebsocketEvent;
 use crate::domain::models::websocket_event_object::WebsocketEventObject;
 
-
-pub async fn upload_file_by_id(
+pub async fn upload_file_by_id_route(
     State(mut app_state): State<AppState>,
     Query(get_file): Query<GetSessionFile>,
     mut multipart: Multipart,
@@ -43,7 +40,7 @@ pub async fn upload_file_by_id(
             .sessions
             .get_mut(&get_file.session_number)
         {
-          
+
 
             if let Some(mut ff) = bundle.files.get_mut(&get_file.file_id) {
                 let f = (*ff).upload(local_filepath, download_url, data.len()).clone();

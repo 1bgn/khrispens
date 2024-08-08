@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use axum::{
     debug_handler,
     extract::State,
@@ -7,24 +5,17 @@ use axum::{
     Json,
 };
 use axum::extract::Query;
-use axum::extract::ws::Message;
-use serde::Serialize;
-use tokio::sync::Mutex;
 
 use crate::{
     app_state::AppState,
     domain::models::session_file::SessionFile,
 };
-use crate::domain::entities::create_session_file::CreateSessionFile;
-use crate::domain::entities::create_session_folder::CreateSessionFolder;
 use crate::domain::entities::get_session_folder::GetSessionFolder;
 use crate::domain::models::session_folder::SessionFolder;
-use crate::domain::models::websocket_event::WebsocketEvent;
-use crate::domain::models::websocket_event_object::WebsocketEventObject;
 use crate::domain::result_models::show_folder::ShowFolder;
 
 #[debug_handler]
-pub async fn show_session_folder(
+pub async fn show_session_folder_route(
     State(app_state): State<AppState>,
     Query(s): Query<GetSessionFolder>,
 ) -> Result<(StatusCode, Json<ShowFolder>), (StatusCode, &'static str)> {

@@ -1,5 +1,5 @@
-use chrono::format::Pad;
 use serde::Serialize;
+
 use crate::domain::models::websocket_event::WebsocketEvent;
 
 #[derive(Serialize)]

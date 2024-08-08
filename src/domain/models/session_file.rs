@@ -60,6 +60,10 @@ impl SessionFile {
         self.update_at = Some(Utc::now());
         return  self;
     }
+    pub fn rename(&mut self, new_name:String) ->&mut  SessionFile{
+        self.file_name = new_name;
+        return  self;
+    }
 }
 #[derive(Clone, Serialize)]
 pub enum SessionFileState {

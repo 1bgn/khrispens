@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use axum::{
     debug_handler,
     extract::State,
@@ -7,21 +5,15 @@ use axum::{
     Json,
 };
 use axum::extract::ws::Message;
-use serde::Serialize;
-use tokio::sync::Mutex;
 
-use crate::{
-    app_state::AppState,
-    domain::models::session_file::SessionFile,
-};
-use crate::domain::entities::create_session_file::CreateSessionFile;
+use crate::app_state::AppState;
 use crate::domain::entities::create_session_folder::CreateSessionFolder;
 use crate::domain::models::session_folder::SessionFolder;
 use crate::domain::models::websocket_event::WebsocketEvent;
 use crate::domain::models::websocket_event_object::WebsocketEventObject;
 
 #[debug_handler]
-pub async fn add_folder_to_session(
+pub async fn add_folder_to_session_route(
     State(mut app_state): State<AppState>,
     Json(s): Json<CreateSessionFolder>,
 ) -> Result<(StatusCode, Json<SessionFolder>), (StatusCode, &'static str)> {

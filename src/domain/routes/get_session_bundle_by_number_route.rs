@@ -1,23 +1,18 @@
-use std::ops::Deref;
-use std::os::macos::raw::stat;
-use std::sync::Arc;
-
 use axum::{
     debug_handler,
     extract::{Query, State},
     http::StatusCode,
     Json,
 };
-use tokio::sync::{Mutex, MutexGuard};
 
 use crate::{
     app_state::AppState,
-    domain::models::{ session_bundle::SessionBundle},
+    domain::models::session_bundle::SessionBundle,
 };
 use crate::domain::entities::get_session::GetSession;
 
 #[debug_handler]
-pub async fn get_session_bundle_by_number(
+pub async fn get_session_bundle_by_number_route(
     State(mut app_state): State<AppState>,
     Query(s): Query<GetSession>,
 ) -> Result<(StatusCode, Json<SessionBundle>), (StatusCode, &'static str)> {

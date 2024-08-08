@@ -1,12 +1,10 @@
-use std::collections::HashMap;
 use std::sync::Arc;
+
 use axum::extract::ws::Message;
-use axum::Json;
-use chrono::format::Item;
 use dashmap::DashMap;
-use serde::Serialize;
+use tokio::sync::broadcast::{self, Sender};
+
 use crate::domain::models::session_bundle::SessionBundle;
-use tokio::sync::{broadcast::{self, Receiver, Sender}, Mutex, MutexGuard};
 
 #[derive(Clone)]
 pub struct AppState {

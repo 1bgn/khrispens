@@ -1,18 +1,13 @@
 use std::collections::HashMap;
+
 use chrono::{DateTime, Utc};
 use rand::Rng;
 use serde::Serialize;
 
-use super::session_file::SessionFile;
-use std::sync::Arc;
-use axum::extract::ws::Message;
-use tokio::sync::{
-    broadcast::{self, Receiver, Sender},
-    Mutex,
-};
 use crate::domain::entities::create_session_folder::CreateSessionFolder;
-use crate::domain::models::session_cell::SessionCell;
 use crate::domain::models::session_folder::SessionFolder;
+
+use super::session_file::SessionFile;
 
 #[derive(Clone, Serialize)]
 pub struct SessionBundle {
@@ -39,4 +34,5 @@ impl SessionBundle {
     pub fn add_folder(&mut self,session_folder: SessionFolder){
         &self.included_folders.insert(session_folder.id,session_folder);
     }
+
 }
