@@ -15,6 +15,7 @@ use filetravel_backend::domain::routes::cancel_upload_session_file_route::cancel
 use filetravel_backend::domain::routes::create_session_route::create_session_route;
 use filetravel_backend::domain::routes::delete_session_file_by_id_route::delete_session_file_by_id_route;
 use filetravel_backend::domain::routes::delete_session_folder_by_id_route::delete_session_folder_by_id_route;
+use filetravel_backend::domain::routes::download_file_from_session_by_id_route::download_file_by_id_route;
 use filetravel_backend::domain::routes::download_file_from_session_route::download_file_from_id_route;
 use filetravel_backend::domain::routes::get_session_bundle_by_number_route::get_session_bundle_by_number_route;
 use filetravel_backend::domain::routes::rename_session_file_route::rename_session_file_route;
@@ -38,6 +39,7 @@ pub fn create_route(app_state: AppState) -> Router {
         .route("/delete-session-folder",delete(delete_session_folder_by_id_route))
         .route("/rename-session-folder",patch(rename_session_folder_route))
         .route("/rename-session-file",patch(rename_session_file_route))
+        .route("/download/:session_number/:file_id",get(download_file_by_id_route))
         .route("/cancel-session-file", post(cancel_upload_session_file_route))
         .route("/session-bundle/ws",get(ws_handler_route))
         .with_state(app_state)

@@ -11,3 +11,4 @@ pub mod show_session_folder_route;
 pub mod delete_session_folder_by_id_route;
 pub mod rename_session_folder_route;
 pub mod rename_session_file_route;
+pub mod download_file_from_session_by_id_route;

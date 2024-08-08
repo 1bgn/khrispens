@@ -27,7 +27,7 @@ pub async fn upload_file_by_id_route(
         let data = field.bytes().await.unwrap();
         let extension = name.split(".").last().unwrap();
         let local_filepath = format!("files/{}.{}", get_file.file_id, extension);
-        let download_url = format!("/download/{}.{}", get_file.file_id, extension);
+        let download_url = format!("http://192.168.3.8:3000/download/{}/{}",get_file.session_number, get_file.file_id, );
         let mut file = File::create(local_filepath.clone()).unwrap();
 
         let Ok(_) = file.write_all(data.as_ref()) else {
