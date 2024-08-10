@@ -19,7 +19,7 @@ pub async fn add_folder_to_session_route(
 ) -> Result<(StatusCode, Json<SessionFolder>), (StatusCode, &'static str)> {
     // let state_clone = Arc::clone(&app_state);
     // let mut guard = state_clone.lock().await;
-    let sender = app_state.move_of(s.session_number);
+    let sender = app_state.move_of(s.session_number.clone());
     if let Some(mut bundle) = app_state
         .sessions
         .get_mut(&s.session_number)

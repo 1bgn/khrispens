@@ -8,22 +8,24 @@ use crate::domain::models::session_bundle::SessionBundle;
 
 #[derive(Clone)]
 pub struct AppState {
-    pub sessions: Arc<DashMap<usize,SessionBundle>>,
-    pub broadcast_txs: Arc<DashMap<usize, Sender<Message>>>,
+    pub address: String,
+    pub sessions: Arc<DashMap<String,SessionBundle>>,
+    pub broadcast_txs: Arc<DashMap<String, Sender<Message>>>,
 }
 impl AppState {
-    pub fn new() -> Self {
+    pub fn new(address:String) -> Self {
         Self {
+            address,
             sessions:Arc::new(DashMap::new()),
             broadcast_txs: Arc::new(DashMap::new())
         }
     }
-    pub fn move_of(& self, index: usize) -> Sender<Message>{
+    pub fn move_of(& self, index: String) -> Sender<Message>{
         let (tx, _) = broadcast::channel(32);
-        self.broadcast_txs.entry(index).or_insert( tx);
+        self.broadcast_txs.entry(index.clone()).or_insert( tx);
         return self.broadcast_txs.get(&index).unwrap().clone();
     }
-    pub fn remove_of(&mut self, index: usize) {
+    pub fn remove_of(&mut self, index: String) {
         self.broadcast_txs.remove(&index);
     }
 }

@@ -24,7 +24,7 @@ pub async fn add_file_to_session_route(
 ) -> Result<(StatusCode, Json<SessionFile>), (StatusCode, &'static str)> {
     let mut guard = Arc::clone(&app_state.sessions);
 
-    let sender =  app_state.move_of(s.session_number);
+    let sender =  app_state.move_of(s.session_number.clone());
 
     if let Some(mut bundle) = guard.get_mut(&s.session_number)
     {

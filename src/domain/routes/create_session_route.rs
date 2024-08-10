@@ -1,5 +1,5 @@
 use axum::{extract::State, http::StatusCode, Json};
-
+use nanoid::nanoid;
 use crate::{app_state::AppState, domain::models::session_bundle::SessionBundle};
 
 // use tokio::sync::Mutex;
@@ -11,13 +11,19 @@ pub async fn create_session_route(
     // let mut state_clone = Arc::clone(&mut app_state.sessions);
     //         tokio::time::sleep(Duration::from_secs(10)).await;
 
-    let len = app_state.sessions.len();
+    let id = nanoid!(6,&nanoid::alphabet::SAFE);
 
-    let session_bundle = SessionBundle::new(len);
+    let session_bundle = SessionBundle::new(id.clone());
     let mut map = &app_state.sessions;
-        map.insert(len,session_bundle.clone()) ;
+        map.insert(id,session_bundle.clone()) ;
 
 
     (StatusCode::OK, Json(session_bundle))
 }
+
+// fn random (size: usize) -> Vec<u8> {
+//     let result: Vec<u8> = vec![0; size];
+//
+//     result
+// }
 

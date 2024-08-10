@@ -17,9 +17,9 @@ pub async fn ws_handler_route(Query(s): Query<GetSession>, ws: WebSocketUpgrade,
 
     return ws.on_upgrade(move |socket| handle_socket(socket,addr, s.session_number, app_state));
 }
-async fn handle_socket(socket: WebSocket, who:SocketAddr, session_number: usize, mut app_state: AppState)  {
+async fn handle_socket(socket: WebSocket, who:SocketAddr, session_number: String, mut app_state: AppState)  {
 
-        let broadcast_tx = app_state.move_of(session_number);
+        let broadcast_tx = app_state.move_of(session_number.clone());
         println!("socket_sessions {:?}", app_state.broadcast_txs);
         let (mut ws_tx, mut ws_rx) = socket.split();
 

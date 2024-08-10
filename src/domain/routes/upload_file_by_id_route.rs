@@ -20,14 +20,14 @@ pub async fn upload_file_by_id_route(
     Query(get_file): Query<GetSessionFile>,
     mut multipart: Multipart,
 ) -> Result<(StatusCode, Json<SessionFile>), (StatusCode, Json<ErrorMessage>)> {
-    let sender =   app_state.move_of(get_file.session_number);
+    let sender =   app_state.move_of(get_file.session_number.clone());
 
     while let Some(field) = multipart.next_field().await.unwrap() {
         let name = field.file_name().unwrap().to_string();
         let data = field.bytes().await.unwrap();
         let extension = name.split(".").last().unwrap();
         let local_filepath = format!("files/{}.{}", get_file.file_id, extension);
-        let download_url = format!("http://192.168.3.8:3000/download/{}/{}",get_file.session_number, get_file.file_id, );
+        let download_url = format!("http://{}/download/{}/{}",app_state.address,get_file.session_number, get_file.file_id, );
         let mut file = File::create(local_filepath.clone()).unwrap();
 
         let Ok(_) = file.write_all(data.as_ref()) else {

@@ -4,6 +4,7 @@ use axum::{
 };
 use axum::extract::DefaultBodyLimit;
 use axum::routing::{delete, patch};
+use tower::limit::GlobalConcurrencyLimitLayer;
 use tower_http::{cors::CorsLayer, trace::TraceLayer};
 use tower_http::services::ServeDir;
 use tower_http::trace::DefaultMakeSpan;
@@ -45,7 +46,7 @@ pub fn create_route(app_state: AppState) -> Router {
         .with_state(app_state)
 
         // .with_state(Arc::new(Mutex::new(State(ws_state))))
-
+        .layer(GlobalConcurrencyLimitLayer::new(1))
         .layer(CorsLayer::permissive())
         .layer(TraceLayer::new_for_http() .make_span_with(DefaultMakeSpan::default().include_headers(true)),)
 }

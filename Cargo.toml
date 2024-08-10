@@ -8,7 +8,7 @@ edition = "2021"
 
 futures = "0.3.30"
 tokio = { version = "^1.39.2", features = ["full", "macros"] }
-tower = "0.4.13"
+tower = {version = "0.4.13",features = ["full"]}
 axum = { version = "0.7.5", features = ["macros", "multipart","ws","default"] }
 http-body = "1.0.1"
 futures-core = "0.3.30"
@@ -26,4 +26,5 @@ tracing = "0.1.40"
 serde_json = "1.0.120"
 dashmap = "6.0.1"
 nanoid  = "=0.4.0"
+mime_guess = "2.0.5"
 time = "0.3.36"

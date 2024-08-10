@@ -11,7 +11,7 @@ use super::session_file::SessionFile;
 
 #[derive(Clone, Serialize)]
 pub struct SessionBundle {
-    pub session_number: usize,
+    pub session_number: String,
     pub id: i64,
     pub start_point:i64,
     pub create_at: DateTime<Utc>,
@@ -20,13 +20,13 @@ pub struct SessionBundle {
     pub included_folders: HashMap<i64, SessionFolder>,
 }
 impl SessionBundle {
-    pub fn new(session_number: usize) -> Self {
+    pub fn new(session_number: String) -> Self {
         Self {
-            included_folders: HashMap::from([(1, SessionFolder::root_new("".to_string(),&CreateSessionFolder { root_folder_id: 0, session_number:session_number, folder_name:String::from("root") }))]),
+            included_folders: HashMap::from([(1, SessionFolder::root_new("".to_string(),&CreateSessionFolder { root_folder_id: 0, session_number:session_number.clone(), folder_name:String::from("root") }))]),
             start_point:1,
             create_at: Utc::now(),
             update_at: None,
-            session_number,
+            session_number:session_number,
             files: HashMap::new(),
             id: rand::thread_rng().gen_range(0..10000000),
         }
